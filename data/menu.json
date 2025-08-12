@@ -1,0 +1,76 @@
+{
+  "meals": [
+    {
+      "id": 1,
+      "name": "Classic Burger & Fries",
+      "description": "Beef patty with lettuce, tomato, cheese, served with crispy fries",
+      "price": 749,
+      "category": "Main Course",
+      "dietary": ["gluten"],
+      "image": "🍔"
+    },
+    {
+      "id": 2,
+      "name": "Grilled Chicken Salad",
+      "description": "Fresh mixed greens with grilled chicken breast, cherry tomatoes, and balsamic dressing",
+      "price": 625,
+      "category": "Salad",
+      "dietary": ["gluten-free"],
+      "image": "🥗"
+    },
+    {
+      "id": 3,
+      "name": "Vegetarian Pizza Slice",
+      "description": "Fresh mozzarella, bell peppers, mushrooms, and basil on thin crust",
+      "price": 415,
+      "category": "Pizza",
+      "dietary": ["vegetarian"],
+      "image": "🍕"
+    },
+    {
+      "id": 4,
+      "name": "Fish & Chips",
+      "description": "Beer-battered cod with seasoned potato wedges and tartar sauce",
+      "price": 830,
+      "category": "Main Course",
+      "dietary": ["gluten"],
+      "image": "🐟"
+    },
+    {
+      "id": 5,
+      "name": "Chicken Caesar Wrap",
+      "description": "Grilled chicken, romaine lettuce, parmesan, and caesar dressing in a tortilla wrap",
+      "price": 580,
+      "category": "Wrap",
+      "dietary": ["gluten"],
+      "image": "🌯"
+    },
+    {
+      "id": 6,
+      "name": "Vegan Buddha Bowl",
+      "description": "Quinoa, roasted vegetables, chickpeas, and tahini dressing",
+      "price": 705,
+      "category": "Bowl",
+      "dietary": ["vegan", "gluten-free"],
+      "image": "🥙"
+    },
+    {
+      "id": 7,
+      "name": "Spaghetti Bolognese",
+      "description": "Classic pasta with rich meat sauce and parmesan cheese",
+      "price": 665,
+      "category": "Pasta",
+      "dietary": ["gluten"],
+      "image": "🍝"
+    },
+    {
+      "id": 8,
+      "name": "Turkey Club Sandwich",
+      "description": "Sliced turkey, bacon, lettuce, tomato on toasted bread with mayo",
+      "price": 540,
+      "category": "Sandwich",
+      "dietary": ["gluten"],
+      "image": "🥪"
+    }
+  ]
+}
