@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Home - QuickBite{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-utensils text-primary"></i>
+                Welcome to QuickBite
+            </h1>
+            <p class="lead">Skip the lunch rush! Pre-order your meals and choose your pickup time.</p>
+            <p class="text-muted">Serving 3,000 students efficiently with smart scheduling.</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <h5 class="card-title">50-Minute Lunch</h5>
+                    <p class="card-text">4 convenient time slots available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-marker-alt fa-2x mb-3"></i>
+                    <h5 class="card-title">3 Pickup Locations</h5>
+                    <p class="card-text">Choose what's convenient for you</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-3"></i>
+                    <h5 class="card-title">500 Students/Hour</h5>
+                    <p class="card-text">Optimized serving capacity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="d-grid gap-3">
+                {% if session.user %}
+                    <!-- Logged in user buttons -->
+                    <a href="{{ url_for('menu') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-book-open me-2"></i>
+                        View Menu & Place Order
+                    </a>
+                    
+                    <a href="{{ url_for('view_cart') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        View Cart
+                    </a>
+                    
+                    {% if session.last_order_id %}
+                    <a href="{{ url_for('order_confirmation') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-receipt me-2"></i>
+                        View Last Order
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <!-- Public user buttons -->
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Login to Order
+                    </a>
+                    
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Sign Up
+                    </a>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            New here? <a href="{{ url_for('register') }}">Create account</a> | 
+                            Already registered? <a href="{{ url_for('login') }}">Login</a>
+                        </small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">How QuickBite Works</h3>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="text-center">
+                <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-book-open text-white"></i>
+                </div>
+                <h5 class="mt-3">1. Browse Menu</h5>
+                <p class="text-muted">Choose from our daily selection of fresh meals</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="text-center">
+                <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-clock text-white"></i>
+                </div>
+                <h5 class="mt-3">2. Pick Time</h5>
+                <p class="text-muted">Select a convenient pickup time slot</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="text-center">
+                <div class="rounded-circle bg-info d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-map-marker-alt text-white"></i>
+                </div>
+                <h5 class="mt-3">3. Choose Location</h5>
+                <p class="text-muted">Pick the most convenient pickup spot</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="text-center">
+                <div class="rounded-circle bg-warning d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-utensils text-white"></i>
+                </div>
+                <h5 class="mt-3">4. Enjoy!</h5>
+                <p class="text-muted">Skip the line and enjoy your meal</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

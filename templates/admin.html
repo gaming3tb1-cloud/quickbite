@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - QuickBite{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Admin Dashboard
+            </h2>
+            <p class="lead">Real-time cafeteria order management and analytics</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <h4>{{ total_orders }}</h4>
+                    <small>Total Orders Today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4>4</h4>
+                    <small>Active Time Slots</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
+                    <h4>3</h4>
+                    <small>Pickup Locations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h4>500</h4>
+                    <small>Max Capacity/Hour</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Slot Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Time Slot Capacity Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for time_slot, count in order_counts.items() %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">{{ time_slot }}</h6>
+                                    <div class="progress mb-2">
+                                        {% set percentage = (count / 125 * 100) | int %}
+                                        <div class="progress-bar 
+                                                   {% if percentage >= 100 %}bg-danger
+                                                   {% elif percentage >= 80 %}bg-warning
+                                                   {% else %}bg-success{% endif %}" 
+                                             style="width: {{ percentage }}%">
+                                        </div>
+                                    </div>
+                                    <small>{{ count }}/125 orders</small>
+                                    <br>
+                                    <small class="text-muted">{{ percentage }}% capacity</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Orders by Time and Location -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        Orders by Time Slot and Location
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for time_slot, locations in orders_summary.items() %}
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2">
+                            <i class="fas fa-clock me-1"></i>{{ time_slot }}
+                            <span class="badge bg-secondary ms-2">
+                                {{ order_counts.get(time_slot, 0) }} total orders
+                            </span>
+                        </h6>
+                        
+                        <div class="row">
+                            {% for location, orders in locations.items() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ location }}
+                                            <span class="badge bg-primary">{{ orders|length }}</span>
+                                        </h6>
+                                    </div>
+                                    {% if orders %}
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Order ID</th>
+                                                        <th>Student</th>
+                                                        <th>Meal</th>
+                                                        <th>Price</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for order in orders %}
+                                                    <tr>
+                                                        <td>#{{ order.order_id }}</td>
+                                                        <td>{{ order.student_name }}</td>
+                                                        <td>
+                                                            {% for item in order.items %}
+                                                                {{ item.meal_name }}{% if item.quantity > 1 %} ({{ item.quantity }}x){% endif %}{% if not loop.last %}, {% endif %}
+                                                            {% endfor %}
+                                                        </td>
+                                                        <td>₹{{ "%.2f"|format(order.total_price) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="4">
+                                                            <small>
+                                                                <strong>Status:</strong> 
+                                                                <span class="badge bg-{{ 'success' if order.preparation_status == 'delivered' else 'primary' if order.preparation_status == 'ready' else 'warning' if order.preparation_status == 'preparing' else 'info' }}">
+                                                                    {{ order.preparation_status.title() }}
+                                                                </span>
+                                                                <strong>Progress:</strong> {{ order.get_delivery_progress() }}%
+                                                                <strong>Est. Ready:</strong> {{ order.get_estimated_delivery_time().strftime('%I:%M %p') }}
+                                                            </small>
+                                                            <div class="mt-1">
+                                                                <div class="btn-group btn-group-sm" role="group">
+                                                                    <button type="button" class="btn btn-outline-info btn-sm" 
+                                                                            onclick="updateOrderStatus('{{ order.order_id }}', 'received')"
+                                                                            {{ 'disabled' if order.preparation_status != 'received' else '' }}>
+                                                                        Received
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                                            onclick="updateOrderStatus('{{ order.order_id }}', 'preparing')">
+                                                                        Preparing
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                            onclick="updateOrderStatus('{{ order.order_id }}', 'ready')">
+                                                                        Ready
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-success btn-sm" 
+                                                                            onclick="updateOrderStatus('{{ order.order_id }}', 'delivered')">
+                                                                        Delivered
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="card-body text-center text-muted">
+                                        <i class="fas fa-inbox"></i>
+                                        <br>No orders yet
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="window.location.reload()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh Data
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateOrderStatus(orderId, newStatus) {
+    fetch('/admin/update_order_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `order_id=${orderId}&status=${newStatus}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showMessage(`Order ${orderId} status updated to ${newStatus}`, 'success');
+            // Reload page to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error updating order status', 'error');
+    });
+}
+
+function showMessage(message, type) {
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alert);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

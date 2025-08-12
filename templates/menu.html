@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Menu & Order - QuickBite{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-book-open text-primary me-2"></i>
+                Today's Menu
+            </h2>
+            <p class="lead">Select your meal, pickup time, and location</p>
+        </div>
+    </div>
+
+    <!-- Time Slot Availability -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5>Time Slot Availability</h5>
+            <div class="row">
+                {% for slot in time_slots %}
+                <div class="col-md-3 mb-2">
+                    <div class="card {% if order_counts.get(slot, 0) >= max_capacity %}bg-danger{% elif order_counts.get(slot, 0) >= max_capacity * 0.8 %}bg-warning{% else %}bg-success{% endif %}">
+                        <div class="card-body text-center">
+                            <strong>{{ slot }}</strong><br>
+                            <small>{{ order_counts.get(slot, 0) }}/{{ max_capacity }} spots</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Info and Quick Order -->
+    {% if user_logged_in %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-info">
+                <div class="card-body text-center">
+                    <h5><i class="fas fa-shopping-cart me-2"></i>Your Cart</h5>
+                    <p class="mb-1">Items: <span id="cart-items">{{ cart.get_total_items() if cart else 0 }}</span></p>
+                    <p class="mb-2">Total: ₹<span id="cart-total">{{ "%.2f"|format(cart.get_total_price()) if cart else "0.00" }}</span></p>
+                    <a href="{{ url_for('view_cart') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-eye me-1"></i>View Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning">
+                <div class="card-body text-center">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Order</h5>
+                    <p class="mb-2">Select a meal and order instantly</p>
+                    <small class="text-muted">Or add multiple items to cart first</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Order Form -->
+    <form method="POST" action="{{ url_for('place_order') }}" id="orderForm">
+    {% else %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Login Required:</strong> You can browse the menu, but you need to 
+        <a href="{{ url_for('login') }}" class="alert-link">login</a> or 
+        <a href="{{ url_for('register') }}" class="alert-link">register</a> to place an order.
+    </div>
+    <div id="menu-browse-only">
+    {% endif %}
+        <div class="row">
+            <!-- Meal Selection -->
+            <div class="col-lg-8 mb-4">
+                <h5 class="mb-3">
+                    <i class="fas fa-utensils me-1"></i>Choose Your Meal
+                </h5>
+                
+                {% if menu.meals %}
+                <div class="row">
+                    {% for meal in menu.meals %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 meal-card" data-meal-id="{{ meal.id }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">
+                                        <span class="meal-emoji">{{ meal.image }}</span>
+                                        {{ meal.name }}
+                                    </h6>
+                                    <span class="badge bg-primary">₹{{ meal.price }}</span>
+                                </div>
+                                
+                                <p class="card-text text-muted small mb-2">{{ meal.description }}</p>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag me-1"></i>{{ meal.category }}
+                                    </small>
+                                </div>
+                                
+                                {% if meal.dietary %}
+                                <div class="mb-2">
+                                    {% for diet in meal.dietary %}
+                                    <span class="badge bg-secondary me-1">{{ diet }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                {% if user_logged_in %}
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm flex-fill"
+                                            onclick="addToCart('{{ meal.id }}', 1)">
+                                        <i class="fas fa-cart-plus me-1"></i>
+                                        Add to Cart
+                                    </button>
+                                    <div class="form-check d-flex align-items-center">
+                                        <input class="form-check-input" 
+                                               type="radio" 
+                                               name="meal_id" 
+                                               id="meal_{{ meal.id }}" 
+                                               value="{{ meal.id }}"
+                                               required>
+                                        <label class="form-check-label ms-1" for="meal_{{ meal.id }}">
+                                            Quick Order
+                                        </label>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Login required to order
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No meals available at this time. Please check back later.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Order Details -->
+            <div class="col-lg-4">
+                <div class="card sticky-top">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-shopping-cart me-1"></i>Order Details
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pickup Time -->
+                        <div class="mb-3">
+                            <label for="pickup_time" class="form-label">
+                                <i class="fas fa-clock me-1"></i>Pickup Time
+                            </label>
+                            <select class="form-select" id="pickup_time" name="pickup_time" required>
+                                <option value="">Choose a time slot</option>
+                                {% for slot in time_slots %}
+                                <option value="{{ slot }}" 
+                                        {% if order_counts.get(slot, 0) >= max_capacity %}disabled{% endif %}>
+                                    {{ slot }}
+                                    {% if order_counts.get(slot, 0) >= max_capacity %}(Full){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Pickup Location -->
+                        <div class="mb-3">
+                            <label for="pickup_location" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>Pickup Location
+                            </label>
+                            <select class="form-select" id="pickup_location" name="pickup_location" required>
+                                <option value="">Choose a location</option>
+                                {% for location in locations %}
+                                <option value="{{ location.name }}" 
+                                        data-lat="{{ location.lat }}" 
+                                        data-lng="{{ location.lng }}"
+                                        data-description="{{ location.description }}">
+                                    {{ location.name }} - {{ location.description }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="show-map-btn" disabled>
+                                    <i class="fas fa-map-marker-alt me-1"></i>Show on Map
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm ms-2" id="get-directions-btn" disabled>
+                                    <i class="fas fa-directions me-1"></i>Get Directions
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div id="order-summary" class="mb-3" style="display: none;">
+                            <hr>
+                            <h6>Order Summary</h6>
+                            <div id="selected-meal"></div>
+                            <div id="selected-time"></div>
+                            <div id="selected-location"></div>
+                            <div id="total-price" class="fw-bold"></div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            {% if user_logged_in %}
+                            <button type="submit" class="btn btn-primary" id="place-order-btn" disabled>
+                                <i class="fas fa-shopping-cart me-2"></i>Place Order
+                            </button>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Order
+                            </a>
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-primary mt-2">
+                                <i class="fas fa-user-plus me-2"></i>Sign Up
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% if user_logged_in %}
+    </form>
+    {% else %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function addToCart(mealId, quantity) {
+    fetch('/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `meal_id=${mealId}&quantity=${quantity}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update cart display
+            document.getElementById('cart-items').textContent = data.cart_count;
+            document.getElementById('cart-total').textContent = data.cart_total.toFixed(2);
+            
+            // Update nav badge
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.textContent = data.cart_count;
+                badge.style.display = data.cart_count > 0 ? 'inline' : 'none';
+            }
+            
+            // Show success message
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error adding to cart', 'error');
+    });
+}
+
+function showMessage(message, type) {
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alert);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 3000);
+}
+
+// Update cart badge on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const cartItems = parseInt(document.getElementById('cart-items').textContent);
+    const badge = document.getElementById('cart-badge');
+    if (badge && cartItems > 0) {
+        badge.textContent = cartItems;
+        badge.style.display = 'inline';
+    }
+});
+</script>
+{% endblock %}

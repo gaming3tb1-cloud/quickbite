@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Order Tracking - QuickBite{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-map-marked-alt me-2"></i>
+                Track Your Order
+            </h2>
+        </div>
+    </div>
+
+    {% if order %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Order Header -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Order #{{ order.order_id }}</h5>
+                    <span class="badge bg-{{ 'success' if order.preparation_status == 'delivered' else 'primary' if order.preparation_status == 'ready' else 'warning' if order.preparation_status == 'preparing' else 'info' }} fs-6">
+                        {{ order.preparation_status.title() }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Student:</strong> {{ order.student_name }}</p>
+                            <p class="mb-2"><strong>Pickup Time:</strong> {{ order.pickup_time }}</p>
+                            <p class="mb-2"><strong>Pickup Location:</strong> {{ order.pickup_location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Order Time:</strong> {{ order.order_time.strftime('%I:%M %p') }}</p>
+                            <p class="mb-2"><strong>Estimated Ready:</strong> 
+                                <span class="text-primary fw-bold">
+                                    {{ order.get_estimated_delivery_time().strftime('%I:%M %p') }}
+                                </span>
+                            </p>
+                            <p class="mb-2"><strong>Total Amount:</strong> 
+                                <span class="text-success fw-bold">₹{{ "%.2f"|format(order.total_price) }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Tracking -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Order Progress
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-{{ 'success' if order.preparation_status == 'delivered' else 'primary' }}" 
+                             role="progressbar" 
+                             style="width: {{ order.get_delivery_progress() }}%"
+                             aria-valuenow="{{ order.get_delivery_progress() }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ order.get_delivery_progress() }}%
+                        </div>
+                    </div>
+
+                    <!-- Status Timeline -->
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="mb-2">
+                                <i class="fas fa-check-circle fa-2x {{ 'text-success' if order.get_delivery_progress() >= 25 else 'text-muted' }}"></i>
+                            </div>
+                            <small class="fw-bold {{ 'text-success' if order.get_delivery_progress() >= 25 else 'text-muted' }}">
+                                Order Received
+                            </small>
+                            {% if order.preparation_status == 'received' or order.get_delivery_progress() >= 25 %}
+                            <div class="small text-muted">{{ order.order_time.strftime('%I:%M %p') }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-3">
+                            <div class="mb-2">
+                                <i class="fas fa-utensils fa-2x {{ 'text-success' if order.get_delivery_progress() >= 50 else 'text-muted' }}"></i>
+                            </div>
+                            <small class="fw-bold {{ 'text-success' if order.get_delivery_progress() >= 50 else 'text-muted' }}">
+                                Preparing
+                            </small>
+                        </div>
+                        <div class="col-3">
+                            <div class="mb-2">
+                                <i class="fas fa-bell fa-2x {{ 'text-success' if order.get_delivery_progress() >= 75 else 'text-muted' }}"></i>
+                            </div>
+                            <small class="fw-bold {{ 'text-success' if order.get_delivery_progress() >= 75 else 'text-muted' }}">
+                                Ready for Pickup
+                            </small>
+                            {% if order.actual_ready_time %}
+                            <div class="small text-muted">{{ order.actual_ready_time.strftime('%I:%M %p') }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-3">
+                            <div class="mb-2">
+                                <i class="fas fa-check-double fa-2x {{ 'text-success' if order.get_delivery_progress() >= 100 else 'text-muted' }}"></i>
+                            </div>
+                            <small class="fw-bold {{ 'text-success' if order.get_delivery_progress() >= 100 else 'text-muted' }}">
+                                Delivered
+                            </small>
+                            {% if order.delivered_time %}
+                            <div class="small text-muted">{{ order.delivered_time.strftime('%I:%M %p') }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Order Items
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price Each</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.meal_name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₹{{ "%.2f"|format(item.meal_price) }}</td>
+                                    <td>₹{{ "%.2f"|format(item.get_total_price()) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="3">Total Amount:</td>
+                                    <td>₹{{ "%.2f"|format(order.total_price) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pickup Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Pickup Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Location Details</h6>
+                            <p class="fw-bold">{{ order.pickup_location }}</p>
+                            <p class="mb-0">Please arrive during your selected time slot:</p>
+                            <p class="fw-bold text-primary">{{ order.pickup_time }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Estimated Times</h6>
+                            <p class="mb-2">
+                                <strong>Food Ready By:</strong> 
+                                <span class="text-success">{{ order.get_estimated_delivery_time().strftime('%I:%M %p') }}</span>
+                            </p>
+                            {% if order.preparation_status != 'delivered' %}
+                            <div class="alert alert-info py-2">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {% if order.preparation_status == 'received' %}
+                                    Your order is in the queue. Preparation will begin shortly.
+                                    {% elif order.preparation_status == 'preparing' %}
+                                    Your order is being prepared. It should be ready soon!
+                                    {% elif order.preparation_status == 'ready' %}
+                                    Your order is ready for pickup! Please collect it during your time slot.
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" 
+                                onclick="openLocationMap('{{ order.pickup_location }}')">
+                            <i class="fas fa-map me-1"></i>View on Map
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                onclick="getDirectionsToPickup('{{ order.pickup_location }}')">
+                            <i class="fas fa-directions me-1"></i>Get Directions
+                        </button>
+                        <a href="{{ url_for('user_orders') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-list me-1"></i>All Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card">
+                <div class="card-body py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>Order Not Found</h4>
+                    <p class="text-muted">The order you're looking for doesn't exist or you don't have permission to view it.</p>
+                    <a href="{{ url_for('user_orders') }}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>View My Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-refresh page every 30 seconds to update order status
+setInterval(function() {
+    location.reload();
+}, 30000);
+
+function openLocationMap(location) {
+    // Get location coordinates (you might want to store these in a lookup)
+    const locations = {
+        'Main Cafeteria': { lat: 28.6139, lng: 77.2090 },
+        'Food Court': { lat: 28.6145, lng: 77.2095 },
+        'Outdoor Station': { lat: 28.6135, lng: 77.2085 }
+    };
+    
+    const coords = locations[location] || locations['Main Cafeteria'];
+    const mapUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+    window.open(mapUrl, '_blank');
+}
+
+function getDirectionsToPickup(location) {
+    const locations = {
+        'Main Cafeteria': { lat: 28.6139, lng: 77.2090 },
+        'Food Court': { lat: 28.6145, lng: 77.2095 },
+        'Outdoor Station': { lat: 28.6135, lng: 77.2085 }
+    };
+    
+    const coords = locations[location] || locations['Main Cafeteria'];
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const directionsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${coords.lat},${coords.lng}`;
+            window.open(directionsUrl, '_blank');
+        }, function() {
+            // Fallback if location access denied
+            const directionsUrl = `https://www.google.com/maps/dir//${coords.lat},${coords.lng}`;
+            window.open(directionsUrl, '_blank');
+        });
+    } else {
+        const directionsUrl = `https://www.google.com/maps/dir//${coords.lat},${coords.lng}`;
+        window.open(directionsUrl, '_blank');
+    }
+}
+</script>
+{% endblock %}

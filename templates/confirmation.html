@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation - QuickBite{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Success Message -->
+            <div class="text-center mb-4">
+                <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-check fa-2x text-white"></i>
+                </div>
+                <h2 class="text-success">Order Confirmed!</h2>
+                <p class="lead">Your meal has been successfully ordered</p>
+            </div>
+
+            <!-- Order Details Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>
+                        Order Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Order Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Order ID:</strong></td>
+                                    <td>#{{ order.order_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Student:</strong></td>
+                                    <td>{{ order.student_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Order Time:</strong></td>
+                                    <td>{{ order.order_time.strftime('%I:%M %p') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td><span class="badge bg-success">{{ order.status.title() }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Order Items</h6>
+                            <div class="p-3 bg-light rounded">
+                                {% for item in order.items %}
+                                <div class="d-flex justify-content-between {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}">
+                                    <div>
+                                        <h6 class="mb-1">{{ item.meal_name }}</h6>
+                                        <small class="text-muted">Qty: {{ item.quantity }} × ₹{{ "%.2f"|format(item.meal_price) }}</small>
+                                    </div>
+                                    <strong class="text-primary">₹{{ "%.2f"|format(item.get_total_price()) }}</strong>
+                                </div>
+                                {% endfor %}
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total:</strong>
+                                    <strong class="text-success">₹{{ "%.2f"|format(order.total_price) }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">
+                                <i class="fas fa-clock me-1"></i>Pickup Time
+                            </h6>
+                            <p class="fw-bold">{{ order.pickup_time }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>Pickup Location
+                            </h6>
+                            <p class="fw-bold">{{ order.pickup_location }}</p>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" 
+                                        onclick="openLocationMap('{{ order.pickup_location }}')">
+                                    <i class="fas fa-map me-1"></i>View on Map
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" 
+                                        onclick="getDirectionsToPickup('{{ order.pickup_location }}')">
+                                    <i class="fas fa-directions me-1"></i>Get Directions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Time Estimation -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-clock me-2"></i>
+                        Estimated Delivery Time
+                    </h6>
+                    <div class="alert alert-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Your order will be ready by:</strong>
+                                <span class="fs-5 text-primary fw-bold">{{ order.get_estimated_delivery_time().strftime('%I:%M %p') }}</span>
+                            </div>
+                            <a href="{{ url_for('track_order', order_id=order.order_id) }}" class="btn btn-primary">
+                                <i class="fas fa-map-marked-alt me-1"></i>Track Order
+                            </a>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Estimated time based on current kitchen queue and your order complexity
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        What's Next?
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Track your order progress in real-time
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Arrive at <strong>{{ order.pickup_location }}</strong> during your selected time slot
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Show this confirmation or provide Order ID: <strong>#{{ order.order_id }}</strong>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Enjoy your meal and skip the long lines!
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('menu') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i>Order Another Meal
+                </a>
+                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home me-1"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
