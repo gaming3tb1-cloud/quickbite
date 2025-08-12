@@ -1,0 +1,214 @@
+/* QuickBite Custom Styles */
+
+/* Root variables for consistency */
+:root {
+    --quickbite-primary: #0d6efd;
+    --quickbite-success: #198754;
+    --quickbite-warning: #ffc107;
+    --quickbite-danger: #dc3545;
+    --quickbite-info: #0dcaf0;
+}
+
+/* Body and layout improvements */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+}
+
+/* Navigation improvements */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* Card enhancements */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.15s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Meal card specific styles */
+.meal-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.meal-card:hover {
+    border-color: var(--bs-primary);
+}
+
+.meal-card.selected {
+    border-color: var(--bs-primary);
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.meal-emoji {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* Form enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Button improvements */
+.btn {
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Badge enhancements */
+.badge {
+    font-weight: 500;
+}
+
+/* Progress bar customization */
+.progress {
+    height: 1rem;
+    border-radius: 0.5rem;
+}
+
+/* Alert improvements */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* Table responsiveness */
+.table-responsive {
+    border-radius: 0.375rem;
+}
+
+/* Sticky elements */
+.sticky-top {
+    top: 1rem;
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .sticky-top {
+        position: static !important;
+    }
+    
+    .meal-card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Custom utility classes */
+.text-decoration-none:hover {
+    text-decoration: underline !important;
+}
+
+.shadow-hover {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.shadow-hover:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Footer improvements */
+footer {
+    margin-top: auto;
+}
+
+/* Order summary styles */
+#order-summary {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+/* Admin dashboard specific styles */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-info,
+.card.bg-warning {
+    color: white;
+}
+
+.card.bg-primary .card-body,
+.card.bg-success .card-body,
+.card.bg-info .card-body,
+.card.bg-warning .card-body {
+    padding: 1.5rem;
+}
+
+/* Time slot cards */
+.time-slot-card {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Capacity indicators */
+.capacity-full {
+    background-color: var(--quickbite-danger) !important;
+}
+
+.capacity-warning {
+    background-color: var(--quickbite-warning) !important;
+}
+
+.capacity-available {
+    background-color: var(--quickbite-success) !important;
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+}
